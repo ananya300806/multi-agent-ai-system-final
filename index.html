@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -200,22 +201,29 @@ function allocate(avail,needs,scores){
  needs.map((n,i)=>i).sort((a,b)=>scores[b]-scores[a]).forEach(i=>{const add=Math.min(left,needs[i]-out[i]);out[i]+=add;left-=add});
  return out;
 }
+
+/* UPDATED RESOURCE REQUIREMENTS */
 function resources(inp,A){
  const k=kind(inp.type),rows=A.rows,c=Math.ceil;
  const need={
-  amb:rows.map(r=>c(r.people*r.damage/4000)+c(r.injured/20)),
-  rsc:rows.map(r=>c(r.people*r.damage/3000)+c(r.trapped/10)),
+  amb:rows.map(r=>c(r.people/10)),
+  rsc:rows.map(r=>c(r.people/5)),
   boat:rows.map(r=>k==="water"?c(r.people*r.damage/2500):0),
-  heavy:rows.map(r=>k==="ground"?c(r.people*r.damage/6000)+(r.trapped>0?1:0):0),
-  heli:rows.map(r=>r.road==="blocked"?c(r.injured/10)+1:0),
-  bus:rows.map(r=>c(r.people*0.4/50)),
-  kits:rows.map(r=>r.injured*2),
-  food:rows.map(r=>r.people*3),
-  water:rows.map(r=>r.people*4)};
+  heavy:rows.map(r=>k==="ground"?c(r.people*r.damage/6000):0),
+  heli:rows.map(r=>c(r.injured/20)),
+  bus:rows.map(r=>c(r.people/20)),
+  kits:rows.map(r=>r.injured),
+  food:rows.map(r=>r.people*2),
+  water:rows.map(r=>r.people*2)
+ };
  const sc=rows.map(r=>r.score),al={},short={};
- for(const key in need){al[key]=allocate(inp.res[key],need[key],sc);short[key]=Math.max(0,need[key].reduce((a,b)=>a+b,0)-inp.res[key])}
+ for(const key in need){
+  al[key]=allocate(inp.res[key],need[key],sc);
+  short[key]=Math.max(0,need[key].reduce((a,b)=>a+b,0)-inp.res[key]);
+ }
  return {need,al,short,rows};
 }
+
 function evacuate(inp,A){
  const k=kind(inp.type),SH=inp.shelters.map(s=>s.name),cap=inp.shelters.map(s=>s.beds);
  const rows=A.rows.map(r=>{
